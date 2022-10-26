@@ -1,4 +1,5 @@
-import 'package:tic_tac_toe_game/ui/pages/home_page.dart';
+
+import 'package:tic_tac_toe_game/ui/pages/game_page.dart';
 
 class Bot {
   // индекс
@@ -6,13 +7,13 @@ class Bot {
   // Сетка игры
   List gridGame = [];
 
-  // получаем позицию опонента
+  // получаем позицию оппонента 
   List postionOpponent = List.generate(8, (index) => 0);
 
-  // индексы стораны где должна быт наша фигурка
+  // индексы стороны где должна быт наша фигурка
   List indexSide = [];
 
-  // Определяем сторну где больше фигурок противника (row1 = 0 , row2 = 1 ,column3 = 3 ...)
+  // Определяем сторону где больше фигурок противника (row1 = 0 , row2 = 1 ,column3 = 3 ...)
   late int indexProbablySide;
 
   Bot({required this.gridGame});
@@ -112,7 +113,7 @@ class Bot {
     }
   }
 
-  // 3 находим индекс пустой ячекки стороны (возможно null , когда ячейка занета нашим фигуркой)
+  // 3 находим индекс пустой ячеики стороны (возможно null , когда ячейка занята наши фигуркой)
   setIndexGoSide() {
     for (var i = 0; i < indexSide.length; i++) {
       int index = indexSide[i];

@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:tic_tac_toe_game/botModal/bot.dart';
-import 'package:tic_tac_toe_game/botModal/game_modal.dart';
-import 'package:tic_tac_toe_game/ui/pages/home_page.dart';
+import 'package:tic_tac_toe_game/modals/bot.dart';
+import 'package:tic_tac_toe_game/modals/game_modal.dart';
 import 'package:tic_tac_toe_game/ui/pages/item.dart';
 
+enum IsTypePlayer { x, o }
+
+typedef TurnFunc = void Function({required int index});
+
+GameModal gameModel = GameModal();
+
 class GamePage extends StatefulWidget {
+  // false => 2 player ; true => bot
+  bool isBotPaly;
+
+  GamePage({super.key, this.isBotPaly = true});
+
   @override
   State<GamePage> createState() => _GamePageState();
 }
-
-GameModal multy = GameModal();
 
 class _GamePageState extends State<GamePage> {
   //!  false = X ; true = O
@@ -19,29 +27,55 @@ class _GamePageState extends State<GamePage> {
 
   bool isEnd = false;
 
+  int playerX = 0;
+  int playerO = 0;
+
   checkWinner() {
-    var checkWin = multy.checkWinner(countGo);
+    var checkWin = gameModel.checkWinner(countGo);
 
     if (checkWin != null) {
       if (checkWin.runtimeType == String) {
         isEnd = true;
-        _showWinDialog(text: 'DROW');
+        _showWinDialog(text: 'DRAW');
       } else {
         isEnd = true;
-        _showWinDialog(text: 'Winn');
+        String nameWinner = '';
+        setState(() {
+          switch (checkWin) {
+            case IsTypePlayer.o:
+              playerO++;
+              nameWinner = 'O';
+              break;
+            case IsTypePlayer.x:
+              playerX++;
+              nameWinner = 'X';
+              break;
+            default:
+          }
+        });
+        _showWinDialog(text: nameWinner);
       }
     }
   }
 
+  initValue() {
+    playerO = 0;
+    playerX = 0;
+    countGo = 0;
+    isTurn = false;
+    isEnd = false;
+    restart();
+  }
+
   restart() {
-    multy.restarGridGame();
+    gameModel.restarGridGame();
     countGo = 0;
     isEnd = false;
     setState(() {});
   }
 
   handleItemMultiplayer({required int index}) async {
-    multy.addGridGame(index, isTurn ? IsTypePlayer.o : IsTypePlayer.x);
+    gameModel.addGridGame(index, isTurn ? IsTypePlayer.o : IsTypePlayer.x);
     countGo++;
     checkWinner();
     isTurn = !isTurn;
@@ -52,19 +86,18 @@ class _GamePageState extends State<GamePage> {
     setState(() {});
   }
 
-
   handleBotPlayer({required int index}) {
-    multy.addGridGame(index, isTurn ? IsTypePlayer.o : IsTypePlayer.x);
+    gameModel.addGridGame(index, isTurn ? IsTypePlayer.o : IsTypePlayer.x);
     countGo++;
     checkWinner();
     if (countGo >= 9 || isEnd == true) {
       setState(() {});
       return;
     }
-    Bot StupidBot = Bot(gridGame: multy.getGridGame);
+    Bot StupidBot = Bot(gridGame: gameModel.getGridGame);
     int indexGoBot = StupidBot.firstBot();
     // await Future.delayed(Duration(seconds: 6));
-    multy.addGridGame(indexGoBot, IsTypePlayer.o);
+    gameModel.addGridGame(indexGoBot, IsTypePlayer.o);
     countGo++;
     setState(() {});
     checkWinner();
@@ -77,14 +110,38 @@ class _GamePageState extends State<GamePage> {
         (index) => Item(
               isTurn: isTurn,
               index: index,
-              changeReplace: handleBotPlayer,
-              showElem: multy.getIndexGridGame(index) != ''
-                  ? multy.getIndexGridGame(index)
+              changeReplace:
+                  widget.isBotPaly ? handleBotPlayer : handleItemMultiplayer,
+              showElem: gameModel.getIndexGridGame(index) != ''
+                  ? gameModel.getIndexGridGame(index)
                   : null,
             ));
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              initValue();
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back)),
+        title: Row(
+          // mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            buildAvaPlayer(text: 'Player O', count: playerO),
+            buildAvaPlayer(text: 'Player X', count: playerX),
+          ],
+        ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                initValue();
+              },
+              icon: Icon(Icons.restart_alt))
+        ],
+      ),
       body: Column(
         children: [
           Container(
@@ -93,6 +150,20 @@ class _GamePageState extends State<GamePage> {
               children: [...items.map((e) => e)],
             ),
           )
+        ],
+      ),
+    );
+  }
+
+  Container buildAvaPlayer({required String text, required int count}) {
+    return Container(
+      child: Column(
+        children: [
+          Text(text),
+          SizedBox(
+            height: 2,
+          ),
+          Text(count.toString())
         ],
       ),
     );

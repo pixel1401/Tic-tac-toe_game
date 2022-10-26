@@ -1,4 +1,4 @@
-import 'package:tic_tac_toe_game/ui/pages/home_page.dart';
+import 'package:tic_tac_toe_game/ui/pages/game_page.dart';
 
 class GameModal {
   List gridGame = List.generate(9, (index) => '');
